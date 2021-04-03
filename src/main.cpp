@@ -21,6 +21,13 @@ long lastSendTime = 0;
 int interval = 1000;
 int count = 0;
 
+// actuators
+unsigned int act2 = 48;
+unsigned int act3 = 48;
+unsigned int act4 = 48;
+unsigned int act5 = 48;
+
+
 
 void sendMessage(String outgoing) {
   LoRa.beginPacket();
@@ -35,11 +42,11 @@ void receiveMessage(int packetSize) {
   if (packetSize == 0) return;
 
   int recipient = LoRa.read();
-  //Serial.println(recipient);
+  Serial.println(recipient);
   byte sender = LoRa.read();
-  //Serial.println(sender);
+  Serial.println(sender);
   byte dump = LoRa.read();
-  //Serial.println(dump);
+  Serial.println(dump);
   byte incomingLength = LoRa.read();
   // Serial.println(incomingLength);
 
@@ -68,14 +75,25 @@ void receiveMessage(int packetSize) {
     return;                             // skip rest of function
   }
 
+  act2 = (int)incoming[0];
+  act3 = (int)incoming[1];
+  act4 = (int)incoming[2];
+  act5 = (int)incoming[3];
+
   Serial.print("\tReceived data " + incoming);
+  //Serial.print(" " + String((int)incoming[0]));
   Serial.print(" from 0x" + String(sender, HEX));
   Serial.println(" to 0x" + String(recipient, HEX));
 }
 
 
-
 void setup() {
+  pinMode(A2, OUTPUT);
+  pinMode(A3, OUTPUT);
+  pinMode(A4, OUTPUT);
+  pinMode(A5, OUTPUT);
+
+
   Serial.begin(9600);
   Serial.println("Start LoRa duplex");
 
@@ -88,9 +106,35 @@ void setup() {
 }
 
 void loop() {
+
+  if (act2 == 49) {
+    digitalWrite(A2, HIGH);
+    //delay(500);
+  } else if (act2 == 48) {
+    digitalWrite(A2, LOW);
+    //delay(500);
+  }
+
+  if (act3 == 49) {
+    digitalWrite(A3, HIGH);
+  } else if (act3 == 48) {
+    digitalWrite(A3, LOW);
+  }
+
+    if (act4 == 49) {
+    digitalWrite(A4, HIGH);
+  } else if (act4 == 48) {
+    digitalWrite(A4, LOW);
+  }
+
+  if (act5 == 49) {
+    digitalWrite(A5, HIGH);
+  } else if (act5 == 48) {
+    digitalWrite(A5, LOW);
+  }
+
   if (millis() - lastSendTime > interval) {
     String sensorData = String(count++);
-
 
     //DHT.read22(DHT22_PIN);
     int sensorValue = analogRead(A1);
