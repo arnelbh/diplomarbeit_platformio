@@ -7,9 +7,9 @@
 #include <string.h>
 #include <stdio.h>
 
-dht DHT;
+//dht DHT;
 
-#define DHT22_PIN A5
+//#define DHT22_PIN A5
 
 const int csPin = 10;
 const int resetPin = A0;
@@ -92,7 +92,7 @@ void loop() {
     String sensorData = String(count++);
 
 
-    DHT.read22(DHT22_PIN);
+    //DHT.read22(DHT22_PIN);
     int sensorValue = analogRead(A1);
     double sensor_dif = 1023 - sensorValue;
     double sensor_peak = sensor_dif/700 * 100;
@@ -103,18 +103,12 @@ void loop() {
       else {
         perc = sensor_peak;
         }
-    // DISPLAY DATA
-    //Serial.print(DHT.humidity, 1);
-    //Serial.print(",\t");
-    //Serial.println(DHT.temperature, 1);
-    //Serial.println(sensorValue + " " + DHT.humidity + " " + DHT.temperature);
     String soil_hum = String(perc);
-    String air_hum = String(DHT.humidity);
-    String air_temp = String(DHT.temperature);
-    //Serial.println(soil_hum + "\t" + air_hum + "\t\t" + air_temp);
-    //delay(2000);
+    //String air_hum = String(DHT.humidity);
+    //String air_temp = String(DHT.temperature);
+
     
-    sensorData = soil_hum + " " + air_hum + " " + air_temp;
+    sensorData = soil_hum + " "; // + air_hum + " " + air_temp;
 
     sendMessage(sensorData);
 
