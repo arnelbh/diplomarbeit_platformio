@@ -26,6 +26,10 @@ unsigned int act2 = 48;
 unsigned int act3 = 48;
 unsigned int act4 = 48;
 unsigned int act5 = 48;
+unsigned int behelterMax = 70;
+unsigned int behelterMin = 30;
+unsigned int tempMax = 60;
+unsigned int tempMin = 40;
 
 
 
@@ -42,20 +46,26 @@ void receiveMessage(int packetSize) {
   if (packetSize == 0) return;
 
   int recipient = LoRa.read();
-  Serial.println(recipient);
+  //Serial.println(recipient);
   byte sender = LoRa.read();
-  Serial.println(sender);
+  //Serial.println(sender);
   byte dump = LoRa.read();
-  Serial.println(dump);
+  //Serial.println(dump);
   byte incomingLength = LoRa.read();
   // Serial.println(incomingLength);
 
   String incoming = "";
   int msg_count = 0;
+  int received_values[10];
+  int serial_value = 0;
 
   while (LoRa.available()) {
-    incoming += (char)LoRa.read();
+    serial_value = LoRa.read();
+    incoming += (String)(serial_value);
     // incoming += LoRa.read();
+    received_values[msg_count] = serial_value;
+    //Serial.println(received_values[msg_count]);
+    
     msg_count += 1;
   }
 
@@ -75,10 +85,14 @@ void receiveMessage(int packetSize) {
     return;                             // skip rest of function
   }
 
-  act2 = (int)incoming[0];
-  act3 = (int)incoming[1];
-  act4 = (int)incoming[2];
-  act5 = (int)incoming[3];
+  act2 = received_values[0];
+  act3 = received_values[1];
+  act4 = received_values[2];
+  act5 = received_values[3];
+  behelterMax = received_values[4];
+  behelterMin = received_values[5];
+  tempMax = received_values[6];
+  tempMin = received_values[7];
 
   Serial.print("\tReceived data " + incoming);
   //Serial.print(" " + String((int)incoming[0]));
@@ -107,29 +121,29 @@ void setup() {
 
 void loop() {
 
-  if (act2 == 49) {
+  if (act2 == 1) {
     digitalWrite(A2, HIGH);
     //delay(500);
-  } else if (act2 == 48) {
+  } else if (act2 == 0) {
     digitalWrite(A2, LOW);
     //delay(500);
   }
 
-  if (act3 == 49) {
+  if (act3 == 1) {
     digitalWrite(A3, HIGH);
-  } else if (act3 == 48) {
+  } else if (act3 == 0) {
     digitalWrite(A3, LOW);
   }
 
-    if (act4 == 49) {
+    if (act4 == 1) {
     digitalWrite(A4, HIGH);
-  } else if (act4 == 48) {
+  } else if (act4 == 0) {
     digitalWrite(A4, LOW);
   }
 
-  if (act5 == 49) {
+  if (act5 == 1) {
     digitalWrite(A5, HIGH);
-  } else if (act5 == 48) {
+  } else if (act5 == 0) {
     digitalWrite(A5, LOW);
   }
 
@@ -157,7 +171,7 @@ void loop() {
     sendMessage(sensorData);
 
     Serial.print("Sending data " + sensorData);
-    Serial.print(" from 0x" + String(localAddress, HEX));
+    Serial.print("from 0x" + String(localAddress, HEX));
     Serial.println(" to 0x" + String(destinationAddress, HEX));
 
     lastSendTime = millis();
