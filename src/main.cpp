@@ -7,9 +7,9 @@
 #include <string.h>
 #include <stdio.h>
 
-dht DHT;
+//dht DHT;
 
-#define DHT22_PIN A5
+//#define DHT22_PIN A5
 
 const int csPin = 10;
 const int resetPin = A0;
@@ -20,6 +20,17 @@ byte destinationAddress = 0xFF;
 long lastSendTime = 0;
 int interval = 1000;
 int count = 0;
+
+// actuators
+unsigned int act2 = 48;
+unsigned int act3 = 48;
+unsigned int act4 = 48;
+unsigned int act5 = 48;
+unsigned int behelterMax = 70;
+unsigned int behelterMin = 30;
+unsigned int tempMax = 60;
+unsigned int tempMin = 40;
+
 
 
 void sendMessage(String outgoing) {
@@ -45,10 +56,16 @@ void receiveMessage(int packetSize) {
 
   String incoming = "";
   int msg_count = 0;
+  int received_values[10];
+  int serial_value = 0;
 
   while (LoRa.available()) {
-    incoming += (char)LoRa.read();
+    serial_value = LoRa.read();
+    incoming += (String)(serial_value);
     // incoming += LoRa.read();
+    received_values[msg_count] = serial_value;
+    //Serial.println(received_values[msg_count]);
+    
     msg_count += 1;
   }
 
@@ -68,14 +85,29 @@ void receiveMessage(int packetSize) {
     return;                             // skip rest of function
   }
 
+  act2 = received_values[0];
+  act3 = received_values[1];
+  act4 = received_values[2];
+  act5 = received_values[3];
+  behelterMax = received_values[4];
+  behelterMin = received_values[5];
+  tempMax = received_values[6];
+  tempMin = received_values[7];
+
   Serial.print("\tReceived data " + incoming);
+  //Serial.print(" " + String((int)incoming[0]));
   Serial.print(" from 0x" + String(sender, HEX));
   Serial.println(" to 0x" + String(recipient, HEX));
 }
 
 
-
 void setup() {
+  pinMode(A2, OUTPUT);
+  pinMode(A3, OUTPUT);
+  pinMode(A4, OUTPUT);
+  pinMode(A5, OUTPUT);
+
+
   Serial.begin(9600);
   Serial.println("Start LoRa duplex");
 
@@ -88,11 +120,37 @@ void setup() {
 }
 
 void loop() {
+
+  if (act2 == 1) {
+    digitalWrite(A2, HIGH);
+    //delay(500);
+  } else if (act2 == 0) {
+    digitalWrite(A2, LOW);
+    //delay(500);
+  }
+
+  if (act3 == 1) {
+    digitalWrite(A3, HIGH);
+  } else if (act3 == 0) {
+    digitalWrite(A3, LOW);
+  }
+
+    if (act4 == 1) {
+    digitalWrite(A4, HIGH);
+  } else if (act4 == 0) {
+    digitalWrite(A4, LOW);
+  }
+
+  if (act5 == 1) {
+    digitalWrite(A5, HIGH);
+  } else if (act5 == 0) {
+    digitalWrite(A5, LOW);
+  }
+
   if (millis() - lastSendTime > interval) {
     String sensorData = String(count++);
 
-
-    DHT.read22(DHT22_PIN);
+    //DHT.read22(DHT22_PIN);
     int sensorValue = analogRead(A1);
     double sensor_dif = 1023 - sensorValue;
     double sensor_peak = sensor_dif/700 * 100;
@@ -103,23 +161,17 @@ void loop() {
       else {
         perc = sensor_peak;
         }
-    // DISPLAY DATA
-    //Serial.print(DHT.humidity, 1);
-    //Serial.print(",\t");
-    //Serial.println(DHT.temperature, 1);
-    //Serial.println(sensorValue + " " + DHT.humidity + " " + DHT.temperature);
     String soil_hum = String(perc);
-    String air_hum = String(DHT.humidity);
-    String air_temp = String(DHT.temperature);
-    //Serial.println(soil_hum + "\t" + air_hum + "\t\t" + air_temp);
-    //delay(2000);
+    //String air_hum = String(DHT.humidity);
+    //String air_temp = String(DHT.temperature);
+
     
-    sensorData = soil_hum + " " + air_hum + " " + air_temp;
+    sensorData = soil_hum + " "; // + air_hum + " " + air_temp;
 
     sendMessage(sensorData);
 
     Serial.print("Sending data " + sensorData);
-    Serial.print(" from 0x" + String(localAddress, HEX));
+    Serial.print("from 0x" + String(localAddress, HEX));
     Serial.println(" to 0x" + String(destinationAddress, HEX));
 
     lastSendTime = millis();
